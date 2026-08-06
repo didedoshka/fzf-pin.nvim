@@ -22,6 +22,10 @@ ok(store.load("spec")["/proj"].e == "/proj/main.c", "store: round-trip")
 store.save("spec", {})
 ok(vim.deep_equal(store.load("spec"), {}), "store: overwrite with empty")
 
+-- namespaces may contain "/": one file per project lives in a subdirectory
+store.save("nested/enc%oded", { e = "/x" })
+ok(store.load("nested/enc%oded").e == "/x", "store: namespace with / round-trips")
+
 local f = vim.fs.joinpath(vim.fn.stdpath("state"), "fzf-pin", "corrupt.json")
 vim.fn.mkdir(vim.fs.dirname(f), "p")
 vim.fn.writefile({ "{not json" }, f)
