@@ -50,7 +50,6 @@ local source = {
     end,
     unpin = function(item)
         log = { "unpin", item.data }
-        return false -- no reopen: open() would need fzf-lua
     end,
     verbs = {
         r = function()
@@ -60,7 +59,7 @@ local source = {
 }
 
 local built = picker.build(source)
-ok(vim.deep_equal(built.entries, { "[e] alpha", "    beta" }), "build: entry rendering")
+ok(vim.deep_equal(built.entries(), { "[e] alpha", "    beta" }), "build: entry rendering")
 
 built.actions.e()
 ok(vim.deep_equal(log, { "activate", 1 }), "chars: taken char activates its item")
@@ -75,11 +74,14 @@ log = nil
 built.actions["enter"]({})
 ok(log == nil, "enter: empty selection is a no-op")
 
-built.actions["ctrl-x"]({ "[e] alpha" })
+ok(built.actions["ctrl-x"].reload == true, "ctrl-x: reloads the list in place")
+built.actions["ctrl-x"].fn({ "[e] alpha" })
 ok(vim.deep_equal(log, { "unpin", 1 }), "ctrl-x: unpins the selected item")
 
 ok(not picker.chars:find("i", 1, true), "chars: i is never pinnable")
-ok(built.unbind:match("^unbind%(i,a,b") ~= nil, "unbind: releases i and the alphabet")
+ok(built.keymap.i:match("^unbind%(i,a,b") ~= nil, "i: releases i and the alphabet")
+ok(built.keymap.esc:match("rebind%(i,a,b") ~= nil, "esc: search mode rebinds the alphabet")
+ok(built.keymap.esc:match("abort") ~= nil, "esc: bound state still aborts")
 
 -- source without pin(): free char warns instead of erroring
 local nopin = { prompt = source.prompt, list = source.list, activate = source.activate }

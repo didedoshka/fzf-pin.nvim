@@ -17,10 +17,12 @@ except `i` is a live bind:
 | free char | `source.pin(char)` -- pins "the current thing" (warns if the source has no `pin`) |
 | `i` | unbinds every char: from here it is a plain fuzzy picker, type to search |
 | `enter` | `source.activate(selected item)` |
-| `ctrl-x` | `source.unpin(selected item)`; a truthy return reopens the refreshed picker |
-| `esc` | close, nothing happened |
+| `ctrl-x` | `source.unpin(selected item)`, then the list reloads in place -- the window stays open |
+| `esc` | after `i`: back to the bound-chars state, query cleared -- as if `i` was never pressed; otherwise close |
 
 Moving a pin is `ctrl-x` then re-pinning; there is no dedicated move.
+The picker opts out of fzf-lua's "hide" profile (`no_hide`): closing it really
+closes, nothing lingers for resume.
 Uppercase and digits are not bound and type into the query even before `i` -- proper search
 starts with `i`.
 
@@ -32,7 +34,7 @@ starts with `i`.
 ---@field list fun(): fzfpin.Item[]        -- ordered; pinned items conventionally first
 ---@field activate fun(item)
 ---@field pin? fun(char)                   -- pin the current thing to char
----@field unpin? fun(item): boolean?       -- truthy return reopens the picker
+---@field unpin? fun(item)                 -- ctrl-x; the list reloads in place afterwards
 ---@field verbs? table<string, fun()>      -- reserved chars, never pinnable
 
 ---@class fzfpin.Item
