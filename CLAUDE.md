@@ -18,6 +18,11 @@ layer (`x`), no-tmux's server picker (`<CR>`).
 box). Real picker interaction needs a live UI -- say so when a change is verified only
 by the suite.
 
+Litre's suite (`~/personal/litre.nvim/tests/run.sh`) drives `build()` as a consumer and
+is the integration test for this plugin's surface -- run it after any `build()`/API
+change (the lua-check hook does both). Measured: the esc/ctrl-x reload refactor turned
+`build().entries` into a function and silently broke litre's spec; nothing here caught it.
+
 ## Style
 
 4-space indent, double quotes, ~100 cols; formatting via lua_ls/EmmyLuaCodeStyle from
