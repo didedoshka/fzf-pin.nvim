@@ -37,7 +37,9 @@ function M.build(source)
 
     -- re-lists on every call: fzf's reload after ctrl-x re-runs this, so the
     -- lookup maps always match what the window shows
+    local listed = false
     local function entries()
+        listed = true
         by_char, by_display = {}, {}
         local lines = {}
         for _, item in ipairs(source.list()) do
@@ -52,6 +54,12 @@ function M.build(source)
     end
 
     local function on_char(c)
+        -- a char typed in one chord with the layer key reaches fzf before it
+        -- has pulled the list: with the maps still empty a pinned char would
+        -- pass for free and pin over it (measured under a pty, `sa` at once)
+        if not listed then
+            entries()
+        end
         if source.verbs and source.verbs[c] then
             source.verbs[c]()
         elseif by_char[c] then

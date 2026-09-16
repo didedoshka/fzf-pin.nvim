@@ -78,6 +78,14 @@ ok(built.actions["ctrl-x"].reload == true, "ctrl-x: reloads the list in place")
 built.actions["ctrl-x"].fn({ "[e] alpha" })
 ok(vim.deep_equal(log, { "unpin", 1 }), "ctrl-x: unpins the selected item")
 
+-- a char pressed before fzf has pulled the list (typed in one chord with the
+-- layer key) must still see the pins, not treat the char as free
+local early = picker.build(source)
+early.actions.e()
+ok(vim.deep_equal(log, { "activate", 1 }), "chars: pinned char before any listing activates")
+early.actions.a()
+ok(vim.deep_equal(log, { "pin", "a" }), "chars: free char before any listing pins")
+
 ok(not picker.chars:find("i", 1, true), "chars: i is never pinnable")
 ok(built.keymap.i:match("^unbind%(i,a,b") ~= nil, "i: releases i and the alphabet")
 ok(built.keymap.esc:match("rebind%(i,a,b") ~= nil, "esc: search mode rebinds the alphabet")
