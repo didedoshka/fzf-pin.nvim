@@ -8,12 +8,12 @@ No built-in sources, no setup(), no keymaps: a consumer defines a *source* and m
 
 `pick(source)` opens an fzf-lua window listing every item from `source.list()`, pinned ones
 rendered `[e] label`, unpinned ones indented. While the window is fresh, every lowercase char
-except `i` is a live bind:
+except `i`, plus every verb char, is a live bind:
 
 | key | effect |
 | --- | --- |
 | pinned char | `source.activate(item)` immediately |
-| verb char (`source.verbs`) | runs the verb |
+| verb char (`source.verbs`) | runs the verb; any case (uppercase verbs leave the whole lowercase alphabet to pins) |
 | free char | `source.pin(char)` -- pins "the current thing" (warns if the source has no `pin`) |
 | `i` | unbinds every char: from here it is a plain fuzzy picker, type to search |
 | `enter` | `source.activate(selected item)` |
@@ -23,8 +23,8 @@ except `i` is a live bind:
 Moving a pin is `ctrl-x` then re-pinning; there is no dedicated move.
 The picker opts out of fzf-lua's "hide" profile (`no_hide`): closing it really
 closes, nothing lingers for resume.
-Uppercase and digits are not bound and type into the query even before `i` -- proper search
-starts with `i`.
+Uppercase and digits that are not verbs are not bound and type into the query even before `i`
+-- proper search starts with `i`.
 
 ## Source contract
 
@@ -35,7 +35,7 @@ starts with `i`.
 ---@field activate fun(item)
 ---@field pin? fun(char)                   -- pin the current thing to char
 ---@field unpin? fun(item)                 -- ctrl-x; the list reloads in place afterwards
----@field verbs? table<string, fun()>      -- reserved chars, never pinnable
+---@field verbs? table<string, fun()>      -- reserved chars (any case), never pinnable
 
 ---@class fzfpin.Item
 ---@field label string                     -- display label, unique within the source

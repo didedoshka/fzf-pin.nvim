@@ -97,6 +97,24 @@ function M.build(source)
         end
         table.insert(bound, c)
     end
+    -- verbs outside the alphabet (uppercase, say) get their own binds, so a
+    -- source can keep every lowercase char free for pins. fzf-lua lowercases
+    -- every key in `actions` and `keymap` (its #654), so these go to fzf raw
+    -- through `fzf_args`, printing an underscore action name: fzf-lua never
+    -- binds those itself but still dispatches them on exit (measured)
+    local extra = vim.tbl_filter(function(k)
+        return not actions[k]
+    end, vim.tbl_keys(source.verbs or {}))
+    table.sort(extra)
+    local raw_binds = {}
+    for _, k in ipairs(extra) do
+        local name = "_verb_" .. k:lower()
+        actions[name] = function()
+            on_char(k)
+        end
+        table.insert(raw_binds, ("--bind=%s:print(%s)+accept"):format(k, name))
+        table.insert(bound, k)
+    end
     local keys = table.concat(bound, ",")
 
     -- `i` returns every char to ordinary typing; the prompt swap is also the
@@ -114,6 +132,7 @@ function M.build(source)
         entries = entries,
         actions = actions,
         keymap = { i = search, esc = esc },
+        raw_binds = raw_binds, -- unescaped fzf arguments, one per bind
     }
 end
 
@@ -129,6 +148,8 @@ function M.open(source)
         prompt = source.prompt,
         actions = built.actions,
         keymap = { fzf = built.keymap },
+        -- raw args are not escaped by fzf-lua, unlike fzf_opts
+        fzf_args = vim.tbl_map(require("fzf-lua.libuv").shellescape, built.raw_binds),
         -- a modal menu, not a resumable search: opt out of fzf-lua's "hide"
         -- profile, whose enrich would replace the esc bind (killing the
         -- esc-undoes-`i` transform) and keep dead fzf processes around

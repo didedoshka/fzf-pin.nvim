@@ -55,6 +55,9 @@ local source = {
         r = function()
             log = { "verb", "r" }
         end,
+        R = function()
+            log = { "verb", "R" }
+        end,
     },
 }
 
@@ -65,6 +68,10 @@ built.actions.e()
 ok(vim.deep_equal(log, { "activate", 1 }), "chars: taken char activates its item")
 built.actions.r()
 ok(vim.deep_equal(log, { "verb", "r" }), "chars: verb wins over pinning")
+built.actions._verb_r()
+ok(vim.deep_equal(log, { "verb", "R" }), "chars: a verb outside the alphabet runs via its raw bind")
+ok(vim.deep_equal(built.raw_binds, { "--bind=R:print(_verb_r)+accept" }),
+    "chars: the raw bind prints the lowercase action name fzf-lua keeps")
 built.actions.a()
 ok(vim.deep_equal(log, { "pin", "a" }), "chars: free char pins")
 
@@ -89,6 +96,8 @@ ok(vim.deep_equal(log, { "pin", "a" }), "chars: free char before any listing pin
 ok(not picker.chars:find("i", 1, true), "chars: i is never pinnable")
 ok(built.keymap.i:match("^unbind%(i,a,b") ~= nil, "i: releases i and the alphabet")
 ok(built.keymap.esc:match("rebind%(i,a,b") ~= nil, "esc: search mode rebinds the alphabet")
+ok(built.keymap.i:match(",R%)") ~= nil and built.keymap.esc:match(",R%)") ~= nil,
+    "i/esc: uppercase verbs are released and rebound with the alphabet")
 ok(built.keymap.esc:match("abort") ~= nil, "esc: bound state still aborts")
 
 -- source without pin(): free char warns instead of erroring
