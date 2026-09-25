@@ -1,7 +1,7 @@
 # fzf-pin.nvim -- session rules
 
 Shared pin-to-char picker machinery; personal project, single user, loaded from this
-checkout via lazy.nvim. Consumers: the config's bookmarks source (`s`), litre's task
+checkout via lazy.nvim. Consumers: the config's bookmarks source (`s`), liter's task
 layer (`x`), no-tmux's server picker (`<CR>`).
 
 - **`readme.md` is the spec** -- it documents shipped behaviour precisely and any
@@ -18,10 +18,10 @@ layer (`x`), no-tmux's server picker (`<CR>`).
 box). Real picker interaction needs a live UI -- say so when a change is verified only
 by the suite.
 
-Litre's suite (`~/personal/litre.nvim/tests/run.sh`) drives `build()` as a consumer and
+Liter's suite (`~/personal/liter.nvim/tests/run.sh`) drives `build()` as a consumer and
 is the integration test for this plugin's surface -- run it after any `build()`/API
 change (the lua-check hook does both). Measured: the esc/ctrl-x reload refactor turned
-`build().entries` into a function and silently broke litre's spec; nothing here caught it.
+`build().entries` into a function and silently broke liter's spec; nothing here caught it.
 
 ## Style
 
