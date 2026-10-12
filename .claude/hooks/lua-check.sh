@@ -23,6 +23,9 @@ fail() {
 
 out="$("$repo/tests/run.sh" 2>&1)" || fail "fzf-pin tests/run.sh failed:" "$out"
 
+# liter from where lazy.nvim loads it -- a checkout next to this one, or lazy's
+# clone -- and its suite pointed at this checkout, the one under edit
 liter="$(dirname "$repo")/liter.nvim"
-out="$("$liter/tests/run.sh" 2>&1)" \
+[[ -d "$liter" ]] || liter="${XDG_DATA_HOME:-$HOME/.local/share}/nvim/lazy/liter.nvim"
+out="$(FZF_PIN_DIR="$repo" "$liter/tests/run.sh" 2>&1)" \
     || fail "liter's suite failed -- it consumes build() and is the integration test for this edit:" "$out"

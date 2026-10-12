@@ -18,7 +18,8 @@ layer (`x`), no-tmux's server picker (`<CR>`).
 box). Real picker interaction needs a live UI -- say so when a change is verified only
 by the suite.
 
-Liter's suite (`tests/run.sh` in the sibling `../liter.nvim`) drives `build()` as a consumer and
+Liter's suite (`tests/run.sh` in liter's checkout or lazy.nvim's clone of it, pointed at
+this checkout through `FZF_PIN_DIR`) drives `build()` as a consumer and
 is the integration test for this plugin's surface -- run it after any `build()`/API
 change (the lua-check hook does both). Measured: the esc/ctrl-x reload refactor turned
 `build().entries` into a function and silently broke liter's spec; nothing here caught it.
