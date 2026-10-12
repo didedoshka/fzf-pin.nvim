@@ -23,6 +23,6 @@ fail() {
 
 out="$("$repo/tests/run.sh" 2>&1)" || fail "fzf-pin tests/run.sh failed:" "$out"
 
-liter="$HOME/personal/liter.nvim"
+liter="$(dirname "$repo")/liter.nvim"
 out="$("$liter/tests/run.sh" 2>&1)" \
     || fail "liter's suite failed -- it consumes build() and is the integration test for this edit:" "$out"
