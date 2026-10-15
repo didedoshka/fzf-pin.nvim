@@ -24,8 +24,8 @@ local search_prompt = "search> "
 ---highlighted item for a source with no "current"; absent means free chars warn
 ---@field unpin? fun(item: fzfpin.Item) ctrl-x; the list reloads in place afterwards
 ---@field verbs? table<string, fun()> chars reserved by the source, never pinnable
----@field preview? fun(item: fzfpin.Item): { path?: string, bufnr?: integer }|nil what the
----preview window shows for an item; absent means no preview window
+---@field preview? fun(item: fzfpin.Item): { path?: string, bufnr?: integer, line?: integer }|nil
+---what the preview window shows for an item, centred on line; absent means no preview window
 
 local function display(item)
     return (item.char and ("[%s] "):format(item.char) or "    ") .. item.label

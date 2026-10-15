@@ -37,7 +37,7 @@ Uppercase and digits that are not verbs are not bound and type into the query ev
 ---@field pin? fun(char, item)             -- pin the current thing (or the highlighted item) to char
 ---@field unpin? fun(item)                 -- ctrl-x; the list reloads in place afterwards
 ---@field verbs? table<string, fun()>      -- reserved chars (any case), never pinnable
----@field preview? fun(item): { path?: string, bufnr?: integer }  -- what the preview shows
+---@field preview? fun(item): { path?: string, bufnr?: integer, line?: integer }  -- what the preview shows, centred on line
 
 ---@class fzfpin.Item
 ---@field label string                     -- display label, unique within the source
