@@ -45,8 +45,8 @@ local source = {
     activate = function(item)
         log = { "activate", item.data }
     end,
-    pin = function(char)
-        log = { "pin", char }
+    pin = function(char, item)
+        log = { "pin", char, item and item.data }
     end,
     unpin = function(item)
         log = { "unpin", item.data }
@@ -74,6 +74,9 @@ ok(vim.deep_equal(built.raw_binds, { "--bind=R:print(_verb_r)+accept" }),
     "chars: the raw bind prints the lowercase action name fzf-lua keeps")
 built.actions.a()
 ok(vim.deep_equal(log, { "pin", "a" }), "chars: free char pins")
+built.actions.a({ "    beta" })
+ok(vim.deep_equal(log, { "pin", "a", 2 }), "chars: free char passes the highlighted item")
+ok(built.item("[e] alpha").data == 1, "item: display line resolves to its item")
 
 built.actions["enter"]({ "    beta" })
 ok(vim.deep_equal(log, { "activate", 2 }), "enter: selected display resolves to item")

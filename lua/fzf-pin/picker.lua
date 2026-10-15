@@ -20,9 +20,12 @@ local search_prompt = "search> "
 ---@field prompt string
 ---@field list fun(): fzfpin.Item[] ordered; pinned items conventionally first
 ---@field activate fun(item: fzfpin.Item)
----@field pin? fun(char: string) pin the current thing; absent means free chars warn
+---@field pin? fun(char: string, item: fzfpin.Item|nil) pin the current thing, or the
+---highlighted item for a source with no "current"; absent means free chars warn
 ---@field unpin? fun(item: fzfpin.Item) ctrl-x; the list reloads in place afterwards
 ---@field verbs? table<string, fun()> chars reserved by the source, never pinnable
+---@field preview? fun(item: fzfpin.Item): { path?: string, bufnr?: integer }|nil what the
+---preview window shows for an item; absent means no preview window
 
 local function display(item)
     return (item.char and ("[%s] "):format(item.char) or "    ") .. item.label
@@ -53,7 +56,7 @@ function M.build(source)
         return lines
     end
 
-    local function on_char(c)
+    local function on_char(c, selected)
         -- a char typed in one chord with the layer key reaches fzf before it
         -- has pulled the list: with the maps still empty a pinned char would
         -- pass for free and pin over it (measured under a pty, `sa` at once)
@@ -65,7 +68,7 @@ function M.build(source)
         elseif by_char[c] then
             source.activate(by_char[c])
         elseif source.pin then
-            source.pin(c)
+            source.pin(c, selected and selected[1] and by_display[selected[1]])
         else
             vim.notify(source.prompt .. "nothing on " .. c, vim.log.levels.WARN)
         end
@@ -92,8 +95,8 @@ function M.build(source)
     }
     local bound = { "i" }
     for c in M.chars:gmatch(".") do
-        actions[c] = function()
-            on_char(c)
+        actions[c] = function(selected)
+            on_char(c, selected)
         end
         table.insert(bound, c)
     end
@@ -130,9 +133,34 @@ function M.build(source)
 
     return {
         entries = entries,
+        item = function(line)
+            return by_display[line]
+        end,
         actions = actions,
         keymap = { i = search, esc = esc },
         raw_binds = raw_binds, -- unescaped fzf arguments, one per bind
+    }
+end
+
+-- fzf-lua's file/buffer previewer, fed from source.preview instead of
+-- parsing the display line (which carries the pin column, not a path).
+-- Handed over as `_ctor`: fzf-lua deep-merges a previewer table with its
+-- defaults, which drops a class's metatable and with it this parse_entry
+-- (measured: the stock parser ran on "    readme.md")
+local function previewer(source, built)
+    local Previewer = require("fzf-lua.previewer.builtin").buffer_or_file:extend()
+    function Previewer:parse_entry(line)
+        local item = built.item(line)
+        local entry = item and source.preview(item) or {}
+        if entry.bufnr and not entry.path then
+            entry.path = vim.api.nvim_buf_get_name(entry.bufnr)
+        end
+        return entry
+    end
+    return {
+        _ctor = function()
+            return Previewer
+        end,
     }
 end
 
@@ -147,6 +175,7 @@ function M.open(source)
     end, {
         prompt = source.prompt,
         actions = built.actions,
+        previewer = source.preview and previewer(source, built) or nil,
         keymap = { fzf = built.keymap },
         -- raw args are not escaped by fzf-lua, unlike fzf_opts
         fzf_args = vim.tbl_map(require("fzf-lua.libuv").shellescape, built.raw_binds),

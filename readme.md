@@ -14,13 +14,14 @@ except `i`, plus every verb char, is a live bind:
 | --- | --- |
 | pinned char | `source.activate(item)` immediately |
 | verb char (`source.verbs`) | runs the verb; any case (uppercase verbs leave the whole lowercase alphabet to pins) |
-| free char | `source.pin(char)` -- pins "the current thing" (warns if the source has no `pin`) |
+| free char | `source.pin(char, highlighted item)` -- pins "the current thing", or the highlighted item for a source with no current thing (warns if the source has no `pin`) |
 | `i` | unbinds every char: from here it is a plain fuzzy picker, type to search |
 | `enter` | `source.activate(selected item)` |
 | `ctrl-x` | `source.unpin(selected item)`, then the list reloads in place -- the window stays open |
 | `esc` | after `i`: back to the bound-chars state, query cleared -- as if `i` was never pressed; otherwise close |
 
 Moving a pin is `ctrl-x` then re-pinning; there is no dedicated move.
+A source with `preview` gets fzf-lua's file/buffer preview window for the highlighted item.
 The picker opts out of fzf-lua's "hide" profile (`no_hide`): closing it really
 closes, nothing lingers for resume.
 Uppercase and digits that are not verbs are not bound and type into the query even before `i`
@@ -33,9 +34,10 @@ Uppercase and digits that are not verbs are not bound and type into the query ev
 ---@field prompt string
 ---@field list fun(): fzfpin.Item[]        -- ordered; pinned items conventionally first
 ---@field activate fun(item)
----@field pin? fun(char)                   -- pin the current thing to char
+---@field pin? fun(char, item)             -- pin the current thing (or the highlighted item) to char
 ---@field unpin? fun(item)                 -- ctrl-x; the list reloads in place afterwards
 ---@field verbs? table<string, fun()>      -- reserved chars (any case), never pinnable
+---@field preview? fun(item): { path?: string, bufnr?: integer }  -- what the preview shows
 
 ---@class fzfpin.Item
 ---@field label string                     -- display label, unique within the source
