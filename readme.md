@@ -10,15 +10,27 @@ No built-in sources, no setup(), no keymaps: a consumer defines a *source* and m
 rendered `[e] label`, unpinned ones indented. While the window is fresh, every lowercase char
 except `i`, plus every verb char, is a live bind:
 
-| key | effect |
-| --- | --- |
-| pinned char | `source.activate(item)` immediately |
-| verb char (`source.verbs`) | runs the verb; any case (uppercase verbs leave the whole lowercase alphabet to pins) |
-| free char | `source.pin(char, highlighted item)` -- pins "the current thing", or the highlighted item for a source with no current thing (warns if the source has no `pin`) |
-| `i` | unbinds every char: from here it is a plain fuzzy picker, type to search |
-| `enter` | `source.activate(selected item)` |
-| `ctrl-x` | `source.unpin(selected item)`, then the list reloads in place -- the window stays open |
-| `esc` | after `i`: back to the bound-chars state, query cleared -- as if `i` was never pressed; otherwise close |
+| key         | effect                                                                    |
+| ----------- | ------------------------------------------------------------------------- |
+| pinned char | `source.activate(item)`, the window closes                                |
+| verb char   | runs `source.verbs[char]`, the window closes                              |
+| free char   | `source.pin(char, highlighted item)`, the list reloads, the window stays  |
+| `i`         | unbinds every char: from here it is a plain fuzzy picker, type to search  |
+| `enter`     | `source.activate(selected item)`, the window closes                       |
+| `ctrl-x`    | `source.unpin(selected item)`, the list reloads, the window stays         |
+| `esc`       | one state back: search → chars over the matches → whole list → closed     |
+
+Verb chars come in any case: uppercase ones leave the whole lowercase alphabet to pins.
+Out of search, `esc` keeps the query: the chars act on the matches found, so a free char pins
+the highlighted match. The next `esc` clears the query, the one after closes the window.
+
+`pin` and `unpin` return what to tell the user, and the picker shows it in fzf's footer while
+the window stays up -- a pin made, or why not (`i` and `esc` clear it). A source without `pin`
+gets `nothing on <char>` there.
+
+Activation and verbs run once the window has closed and, when the picker was opened from a
+terminal's normal mode, once fzf-lua has put that mode back -- so a picker they open starts in
+terminal mode and closes into normal mode.
 
 Moving a pin is `ctrl-x` then re-pinning; there is no dedicated move.
 A source with `preview` gets fzf-lua's file/buffer preview window for the highlighted item.
@@ -34,10 +46,12 @@ Uppercase and digits that are not verbs are not bound and type into the query ev
 ---@field prompt string
 ---@field list fun(): fzfpin.Item[]        -- ordered; pinned items conventionally first
 ---@field activate fun(item)
----@field pin? fun(char, item)             -- pin the current thing (or the highlighted item) to char
----@field unpin? fun(item)                 -- ctrl-x; the list reloads in place afterwards
+---@field pin? fun(char, item): string?    -- pin the highlighted item (nil: none) to char
+---@field unpin? fun(item): string?        -- ctrl-x; the list reloads in place afterwards
 ---@field verbs? table<string, fun()>      -- reserved chars (any case), never pinnable
----@field preview? fun(item): { path?: string, bufnr?: integer, line?: integer }  -- what the preview shows, centred on line
+---@field preview? fun(item): { path?: string, bufnr?: integer, line?: integer }
+--                                         -- what the preview shows, centred on line
+-- pin/unpin return the footer text (or nil for none)
 
 ---@class fzfpin.Item
 ---@field label string                     -- display label, unique within the source
