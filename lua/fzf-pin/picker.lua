@@ -187,6 +187,9 @@ end
 -- picker the action opens (liter's value picker) started in normal mode and
 -- closed into terminal mode (measured). So an action that closes the window
 -- waits for the switch, the way fzf-lua's own run_builtin does.
+-- The wait calls back from inside a non-nested User autocmd, where an :edit
+-- skips BufRead and FileType: liter's `C` from a terminal opened .liter.lua
+-- with no filetype (measured). So the action is scheduled out of it.
 local function after_mode_restored(action)
     return function(...)
         local args = { ... }
@@ -196,7 +199,9 @@ local function after_mode_restored(action)
             return action(...)
         end
         wait(function()
-            action(unpack(args))
+            vim.schedule(function()
+                action(unpack(args))
+            end)
         end)
     end
 end
