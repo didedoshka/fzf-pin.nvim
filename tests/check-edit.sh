@@ -6,11 +6,7 @@
 # this repo's own suite stayed green.
 set -uo pipefail
 
-repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-
-file="$(jq -r '.tool_input.file_path // .tool_response.filePath // empty' 2>/dev/null)"
-[[ "$file" == *.lua ]] || exit 0        # not lua -- nothing to do
-[[ "$file" == "$repo"/* ]] || exit 0    # not this repo's lua
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 fail() {
     {

@@ -28,6 +28,5 @@ change (the lua-check hook does both). Measured: the esc/ctrl-x reload refactor 
 
 4-space indent, double quotes, ~100 cols; formatting via lua_ls/EmmyLuaCodeStyle from
 `.luarc.json` -- no stylua. Comments explain *why*, never the next line. Commit each
-verified change without asking (`area: lowercase summary`,
-`Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`). Never rewrite history -- no
+verified change without asking (`area: lowercase summary`). Never rewrite history -- no
 amend, rebase, or reset past a commit; fix forward with a new commit.
